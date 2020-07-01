@@ -1,0 +1,33 @@
+---
+- name: Setup an NGINX Server inside a CentOS 7 Docker, built by Ansible
+  hosts: localhost
+  connection: local
+  remote_user: root
+  vars:
+    create_containers: 1 # Number of containers to create
+    default_container_name: nginx-docker
+    default_container_image: ansible-docker-nginx
+    default_container_tag: v1
+
+  tasks:
+    - name: Building Docker image from Dockerfile
+      docker_image:
+        build:
+          path: _docker/
+          pull: no
+        name: "{{ default_container_image }}"
+        tag: "{{ default_container_tag }}"
+        source: build
+        state: present
+        debug: yes
+
+    - name: RUN The Docker IMG
+      docker_container:
+        name: "{{ default_container_name }}"
+        image: "{{ default_container_image }}:{{ default_container_tag }}"
+        network_mode: bridge
+        ports:
+          - "80:80"
+        privileged: true
+        state: started
+        debug: yes
